@@ -7,21 +7,34 @@ public class Planet : MonoBehaviour
 
     [Range(2, 256)]
     public int resolution = 10;
+    public bool autoUpdate = true; // auto updating
+
+    // Create shape and colour settings
+    public ShapeSettings shapeSettings;
+    public ColourSettings colourSettings;
+
+    // Foldout status of custom settings fields in inspector
+    [HideInInspector]
+    public bool shapeSettingsFoldout;
+    [HideInInspector]
+    public bool colourSettingsFoldout;
+
+
+    // Create shape generator object
+    ShapeGenerator shapeGenerator;
 
     [SerializeField, HideInInspector]
     MeshFilter[] meshFilters;
     TerrainFace[] terrainFaces;
 
-    // Function to create mesh in the editor when something is updated
-    private void OnValidate()
-    {
-        Initialize();
-        GenerateMesh();
-    }
+
 
     // Initialize mesh
     void Initialize()
     {
+
+        // Initialize shapeGenerator
+        shapeGenerator = new ShapeGenerator(shapeSettings);
         
         // Reinitialise mesh filters if array is empty
         if (meshFilters == null || meshFilters.Length == 0)
@@ -45,10 +58,42 @@ public class Planet : MonoBehaviour
                 meshFilters[i].sharedMesh = new Mesh();
             }
 
-            terrainFaces[i] = new TerrainFace(meshFilters[i].sharedMesh, resolution, directions[i]);
+            terrainFaces[i] = new TerrainFace(shapeGenerator, meshFilters[i].sharedMesh, resolution, directions[i]);
         }
 
     }
+
+
+    // Generate the whole planet
+    public void GeneratePlanet()
+    {
+        Initialize();
+        GenerateMesh();
+        GenerateColours();
+    }
+
+
+    // Update the planet's shape
+    public void OnShapeSettingsUpdated()
+    {
+        if (autoUpdate)
+        {
+            Initialize();
+            GenerateMesh();
+        }
+    }
+
+
+    // Update the planet's colour
+    public void OnColourSettingsUpdated()
+    {
+        if (autoUpdate)
+        {
+            Initialize();
+            GenerateColours();
+        }
+    }
+
 
     // Generate mesh
     void GenerateMesh()
@@ -56,6 +101,16 @@ public class Planet : MonoBehaviour
         foreach (TerrainFace face in terrainFaces)
         {
             face.ConstructMesh();
+        }
+    }
+
+
+    // Generate colour of the meshes
+    void GenerateColours()
+    {
+        foreach (MeshFilter m in meshFilters)
+        {
+            m.GetComponent<MeshRenderer>().sharedMaterial.color = colourSettings.planetColour;
         }
     }
 }

@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class TerrainFace {
 
+    ShapeGenerator shapeGenerator; // planet shape generator
     Mesh mesh;
     int resolution;
     Vector3 localUp;
@@ -11,8 +12,9 @@ public class TerrainFace {
     Vector3 axisB;
 
     // Class constructor
-    public TerrainFace(Mesh mesh, int resolution, Vector3 localUp)
+    public TerrainFace(ShapeGenerator shapeGenerator, Mesh mesh, int resolution, Vector3 localUp)
     {
+        this.shapeGenerator = shapeGenerator;
         this.mesh = mesh;
         this.resolution = resolution;
         this.localUp = localUp;
@@ -38,7 +40,7 @@ public class TerrainFace {
                 Vector3 pointOnUnitCube = localUp + (percent.x - .5f)*2*axisA + (percent.y - .5f)*2*axisB; // sum of base vectors
                 Vector3 pointOnUnitSphere = pointOnUnitCube.normalized;
 
-                vertices[i] = pointOnUnitSphere; //pointOnUnitCube;
+                vertices[i] = shapeGenerator.CalculatePointOnPlanet(pointOnUnitSphere);
 
                 // Create the triangles, if not on right or bottom edges
                 if (x != resolution - 1 && y != resolution - 1)
