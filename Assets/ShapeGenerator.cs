@@ -5,15 +5,49 @@ using UnityEngine;
 public class ShapeGenerator
 {
     ShapeSettings settings;
+    NoiseFilter[] noiseFilters;
 
     public ShapeGenerator(ShapeSettings settings)
     {
         this.settings = settings;
+
+        // Initialize noiseFilters array of noise filters
+        noiseFilters = new NoiseFilter[settings.noiseLayers.Length];
+
+        // Populate noiseFilters array
+        for (int i = 0; i < noiseFilters.Length; i++)
+        {
+            noiseFilters[i] = new NoiseFilter(settings.noiseLayers[i].noiseSettings); // new noise filter with settings
+        }
     }
 
     // Calculate point on planet
     public Vector3 CalculatePointOnPlanet(Vector3 pointOnUnitSphere)
     {
-        return pointOnUnitSphere * settings.planetRadius;
+        float firstLayerValue = 0;
+        float elevation = 0; // initialize added elevation due to noise
+
+        // Process first noise layer
+        if (noiseFilters.Length > 0)
+        {
+            firstLayerValue = noiseFilters[0].Evaluate(pointOnUnitSphere);
+            if (settings.noiseLayers[0].enabled)
+            {
+                elevation = firstLayerValue;
+            }
+        }
+
+        // Loop through all the overlapping noise layers to calculate total added elevation due to noise
+        for (int i = 1; i < noiseFilters.Length; i++)
+        {
+            if (settings.noiseLayers[i].enabled) // check if layer is enabled
+            {
+                float mask = (settings.noiseLayers[i].useFirstLayerAsMask) ? firstLayerValue : 1; // if true, then =firstLayerValue; else =1 (no mask)
+                elevation += noiseFilters[i].Evaluate(pointOnUnitSphere) * mask; // calculate added elevation due to noise layer
+            }
+        }
+
+        // Calculate point on planet, factoring in displacement due to total noise elevation
+        return pointOnUnitSphere * settings.planetRadius * (1 + elevation); // calculate total elevation
     }
 }
