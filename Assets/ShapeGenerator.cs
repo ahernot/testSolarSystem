@@ -6,8 +6,9 @@ public class ShapeGenerator
 {
     ShapeSettings settings;
     INoiseFilter[] noiseFilters; // array of generic noise filters (it can hold any type)
+    public MinMax elevationMinMax;
 
-    public ShapeGenerator(ShapeSettings settings)
+    public void UpdateSettings(ShapeSettings settings)
     {
         this.settings = settings;
 
@@ -19,6 +20,9 @@ public class ShapeGenerator
         {
             noiseFilters[i] = NoiseFilterFactory.CreateNoiseFilter(settings.noiseLayers[i].noiseSettings);//new SimpleNoiseFilter(settings.noiseLayers[i].noiseSettings); // new noise filter with settings
         }
+
+        // Generate elevationMinMax
+        elevationMinMax = new MinMax();
     }
 
     // Calculate point on planet
@@ -47,7 +51,13 @@ public class ShapeGenerator
             }
         }
 
+        // Calculate elevation
+        elevation = settings.planetRadius * (1 + elevation);
+
+        // Add elevation to elevationMinMax
+        elevationMinMax.AddValue(elevation);
+
         // Calculate point on planet, factoring in displacement due to total noise elevation
-        return pointOnUnitSphere * settings.planetRadius * (1 + elevation); // calculate total elevation
+        return pointOnUnitSphere * elevation;
     }
 }
