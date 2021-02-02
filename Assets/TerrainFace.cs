@@ -29,7 +29,7 @@ public class TerrainFace {
         int[] triangles = new int[(resolution - 1) * (resolution - 1) * 6]; // number of triangles for a square mesh with resolution vertices per side, times 3 for the number of vertex triplets
         int triIndex = 0;
 
-        Vector2[] uv = mesh.uv; // save uv before resetting mesh, to avoid recalculating
+        Vector2[] uv = (mesh.uv.Length == vertices.Length) ? mesh.uv : new Vector2[vertices.Length]; // save uv before resetting mesh, to avoid recalculating
 
         for (int y = 0; y < resolution; y++)
         {
@@ -41,7 +41,9 @@ public class TerrainFace {
                 Vector3 pointOnUnitCube = localUp + (percent.x - .5f)*2*axisA + (percent.y - .5f)*2*axisB; // sum of base vectors
                 Vector3 pointOnUnitSphere = pointOnUnitCube.normalized;
 
-                vertices[i] = shapeGenerator.CalculatePointOnPlanet(pointOnUnitSphere);
+                float unscaledElevation = shapeGenerator.CalculateUnscaledElevation(pointOnUnitSphere);
+                vertices[i] = pointOnUnitSphere * shapeGenerator.GetScaledElevation(unscaledElevation);
+                uv[i].y = unscaledElevation;
 
                 // Create the triangles, if not on right or bottom edges
                 if (x != resolution - 1 && y != resolution - 1)
@@ -74,7 +76,7 @@ public class TerrainFace {
 
     public void UpdateUVs(ColourGenerator colourGenerator)
     {
-        Vector2[] uv = new Vector2[resolution * resolution];
+        Vector2[] uv = mesh.uv;
 
         for (int y = 0; y < resolution; y++)
         {
@@ -86,7 +88,7 @@ public class TerrainFace {
                 Vector3 pointOnUnitCube = localUp + (percent.x - .5f)*2*axisA + (percent.y - .5f)*2*axisB; // sum of base vectors
                 Vector3 pointOnUnitSphere = pointOnUnitCube.normalized;
 
-                uv[i] = new Vector2(colourGenerator.BiomePercentFromPoint(pointOnUnitSphere), 0);
+                uv[i].x = colourGenerator.BiomePercentFromPoint(pointOnUnitSphere);
             }
         }
 

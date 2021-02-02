@@ -15,7 +15,8 @@ public class ColourGenerator
         
         if (texture == null || texture.height != settings.biomeColourSettings.biomes.Length) // update texture if null or if height not equal to nb of biomes
         {
-            texture = new Texture2D(textureResolution, settings.biomeColourSettings.biomes.Length); // width, height (each row stores the colour for a biome)
+            // first half of each texture strip is ocean texture
+            texture = new Texture2D(textureResolution * 2, settings.biomeColourSettings.biomes.Length, TextureFormat.RGBA32, false); // width, height (each row stores the colour for a biome) // disable mipmapping (lowres texture version for viewing from far away)
         }
 
         // Initialise biome noise filter
@@ -66,9 +67,19 @@ public class ColourGenerator
         // Run through each biome
         foreach (var biome in settings.biomeColourSettings.biomes)
         {
-            for (int i = 0; i < textureResolution; i++) // loop through width of texture
+            for (int i = 0; i < textureResolution * 2; i++) // loop through width of texture
             {
-                Color gradientCol = biome.gradient.Evaluate(i / (textureResolution - 1f));
+                Color gradientCol;
+                
+                if (i < textureResolution)
+                {
+                    gradientCol = settings.oceanColour.Evaluate(i / (textureResolution - 1f)); // get color from ocean gradient
+                }
+                else
+                {
+                    gradientCol = biome.gradient.Evaluate((i - textureResolution) / (textureResolution - 1f)); // get color from biome gradient
+                }
+                
                 Color tintCol = biome.tint;
                 colours[colourIndex] = gradientCol * (1 - biome.tintPercent) + tintCol * biome.tintPercent;
                 colourIndex++;

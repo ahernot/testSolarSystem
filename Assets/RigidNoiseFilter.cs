@@ -36,7 +36,7 @@ public class RidgidNoiseFilter: INoiseFilter
 
         }
 
-        noiseValue = Mathf.Max(0, noiseValue - settings.minValue); // minimum altitude is base sphere
+        noiseValue = noiseValue - settings.minValue; //Mathf.Max(0, noiseValue - settings.minValue); // minimum altitude is base sphere
         
         return noiseValue * settings.strength;
     }

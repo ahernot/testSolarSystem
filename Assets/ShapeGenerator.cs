@@ -26,7 +26,7 @@ public class ShapeGenerator
     }
 
     // Calculate point on planet
-    public Vector3 CalculatePointOnPlanet(Vector3 pointOnUnitSphere)
+    public float CalculateUnscaledElevation(Vector3 pointOnUnitSphere)
     {
         float firstLayerValue = 0;
         float elevation = 0; // initialize added elevation due to noise
@@ -51,13 +51,19 @@ public class ShapeGenerator
             }
         }
 
-        // Calculate elevation
-        elevation = settings.planetRadius * (1 + elevation);
-
         // Add elevation to elevationMinMax
         elevationMinMax.AddValue(elevation);
 
         // Calculate point on planet, factoring in displacement due to total noise elevation
-        return pointOnUnitSphere * elevation;
+        return elevation;
+    }
+
+
+
+    public float GetScaledElevation(float unscaledElevation)
+    {
+        float elevation = Mathf.Max(0, unscaledElevation);
+        elevation = settings.planetRadius * (1 + elevation);
+        return elevation;
     }
 }
