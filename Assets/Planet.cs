@@ -131,14 +131,16 @@ public class Planet : MonoBehaviour
     // Generate colour of the meshes
     void GenerateColours()
     {
-
         colourGenerator.UpdateColours();
 
-        /*
-        foreach (MeshFilter m in meshFilters)
+        // Run through all 6 faces
+        for (int i = 0; i < 6; i++)
         {
-            m.GetComponent<MeshRenderer>().sharedMaterial.color = colourSettings.planetColour;
+            if (meshFilters[i].gameObject.activeSelf)
+            {
+                terrainFaces[i].UpdateUVs(colourGenerator);
+            }
         }
-        */
+
     }
 }

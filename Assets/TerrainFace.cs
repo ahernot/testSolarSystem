@@ -29,6 +29,7 @@ public class TerrainFace {
         int[] triangles = new int[(resolution - 1) * (resolution - 1) * 6]; // number of triangles for a square mesh with resolution vertices per side, times 3 for the number of vertex triplets
         int triIndex = 0;
 
+        Vector2[] uv = mesh.uv; // save uv before resetting mesh, to avoid recalculating
 
         for (int y = 0; y < resolution; y++)
         {
@@ -66,6 +67,32 @@ public class TerrainFace {
         mesh.vertices = vertices;
         mesh.triangles = triangles;
         mesh.RecalculateNormals();
+
+        mesh.uv = uv; // reassigned saved uv
+    }
+
+
+    public void UpdateUVs(ColourGenerator colourGenerator)
+    {
+        Vector2[] uv = new Vector2[resolution * resolution];
+
+        for (int y = 0; y < resolution; y++)
+        {
+            for (int x = 0; x < resolution; x++)
+            {
+                int i = x + y*resolution; // number of total iterations
+
+                Vector2 percent = new Vector2(x, y) / (resolution - 1); // percent on the x-axis and y-axis, between 0 and 1
+                Vector3 pointOnUnitCube = localUp + (percent.x - .5f)*2*axisA + (percent.y - .5f)*2*axisB; // sum of base vectors
+                Vector3 pointOnUnitSphere = pointOnUnitCube.normalized;
+
+                uv[i] = new Vector2(colourGenerator.BiomePercentFromPoint(pointOnUnitSphere), 0);
+            }
+        }
+
+        // Update class parameter
+        mesh.uv = uv;
+
     }
 
 }
